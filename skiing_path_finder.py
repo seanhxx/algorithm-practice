@@ -74,31 +74,37 @@ class DirectedAcyclicGraph:
         max_drop = 0
         longest_path = []
         for i in start_nodes:
-            drop = self.dfs([i], path_map)
+            drop, longest_path = self.dfs([i], path_map)
             if drop > max_drop:
                 max_drop = drop
-        print(max_length+1, max_drop)
+        return max_length+1, max_drop, longest_path, [self.ski_map[x[0]][x[1]] for x in longest_path]
 
     def dfs(self, opening, pathMap):
-        # closed = []
+        search_path = defaultdict(list)
         start_node_value = self.ski_map[opening[0][0]][opening[0][1]]
         max_drop = 0
         while opening:
             n = opening.pop(0)
-            # closed.append(n)
             if pathMap[n[0]][n[1]] == 0:
                 if max_drop < self.ski_map[n[0]][n[1]] - start_node_value:
                     max_drop = self.ski_map[n[0]][n[1]] - start_node_value
+                    max_node = (n[0], n[1])
             else:
                 temp_max = max([pathMap[x[0]][x[1]] for x in self.graph_in[n]])
                 for x in self.graph_in[n]:
                     if pathMap[x[0]][x[1]] == temp_max:
                         opening.insert(0, x)
-        return max_drop
+                        search_path[x] = n
+        longest_path = []
+        longest_path.append(max_node)
+        while max_node in search_path:
+            max_node = search_path[max_node]
+            longest_path.append(max_node)
+        return max_drop, longest_path
 
 
 cwd = os.getcwd()
-file_path = os.path.join(cwd, 'ski_map_sample1.txt')
+file_path = os.path.join(cwd, 'ski_map_sample2.txt')
 ski_map = []
 with open(file_path) as f:
     size = [int(x) for x in f.readline().split(' ')]
@@ -144,5 +150,8 @@ def build_dag(skimap):
 dag = build_dag(ski_map)
 # dag.showEdge()
 top_order = dag.topologicalSort()
-dag.findLongestPath()
+length, drop, path, value = dag.findLongestPath()
+print(length, drop)
+print(path)
+print(value)
 
